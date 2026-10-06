@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LiveAuction.Api/LiveAuction.Api.csproj" />
+    <Project Path="src/LiveAuction.Application/LiveAuction.Application.csproj" />
+    <Project Path="src/LiveAuction.Domain/LiveAuction.Domain.csproj" />
+    <Project Path="src/LiveAuction.Infrastructure/LiveAuction.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LiveAuction.Tests/LiveAuction.Tests.csproj" />
+  </Folder>
+</Solution>
