@@ -1,8 +1,10 @@
+using LiveAuction.Application;
 using LiveAuction.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

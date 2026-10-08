@@ -1,6 +1,16 @@
 @LiveAuction.Api_HostAddress = http://localhost:5243
 
-GET {{LiveAuction.Api_HostAddress}}/weatherforecast/
+### Create auction
+POST {{LiveAuction.Api_HostAddress}}/auctions
+Content-Type: application/json
 Accept: application/json
+
+{
+  "sellerId": "11111111-1111-1111-1111-111111111111",
+  "title": "Vintage watch",
+  "startingPrice": 100,
+  "minIncrement": 10,
+  "endsAt": "2026-12-31T23:59:59Z"
+}
 
 ###
