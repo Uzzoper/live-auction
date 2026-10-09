@@ -22,6 +22,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Validation failed"
             },
+            AuctionNotFoundException ex => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Auction not found",
+                Detail = ex.Message
+            },
             DomainException ex => new ProblemDetails
             {
                 Status = StatusCodes.Status422UnprocessableEntity,
