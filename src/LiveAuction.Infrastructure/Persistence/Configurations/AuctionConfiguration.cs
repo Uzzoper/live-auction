@@ -17,6 +17,8 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
         builder.Property(a => a.CurrentPrice).HasPrecision(18, 2);
         builder.Property(a => a.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(a => a.RowVersion).IsRowVersion();
+        builder.Property(a => a.EndsAt)
+            .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
         builder.HasMany(a => a.Bids)
             .WithOne()

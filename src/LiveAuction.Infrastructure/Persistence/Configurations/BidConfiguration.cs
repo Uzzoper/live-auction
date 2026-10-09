@@ -10,8 +10,9 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
     {
         builder.HasKey(b => b.Id);
         builder.Property(b => b.Id).ValueGeneratedNever();
-
         builder.Property(b => b.Amount).HasPrecision(18, 2);
+        builder.Property(b => b.PlacedAt)
+            .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         builder.HasIndex(b => new { b.AuctionId, b.Amount });
     }
 }
