@@ -17,6 +17,7 @@ public static class DependencyInjection
 
         });
         services.AddValidatorsFromAssembly(assembly);
+        services.AddSingleton(TimeProvider.System);
 
         return services;
     }

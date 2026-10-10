@@ -1,4 +1,6 @@
+using LiveAuction.Api.Contracts;
 using LiveAuction.Application.Auctions.Commands.CreateAuction;
+using LiveAuction.Application.Auctions.Commands.PlaceBid;
 using LiveAuction.Application.Auctions.Dtos;
 using LiveAuction.Application.Auctions.Queries.GetAuctionById;
 using LiveAuction.Domain.Entities;
@@ -21,4 +23,9 @@ public class AuctionsController(ISender sender) : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<AuctionDto>> GetById(Guid id, CancellationToken ct)
         => Ok(await sender.Send(new GetAuctionByIdQuery(id), ct));
+    
+    [HttpPost("{id:guid}/bids")]
+    public async Task<ActionResult<PlaceBidResult>> PlaceBid(
+        Guid id, [FromBody] PlaceBidRequest request, CancellationToken ct)
+        => Ok(await sender.Send(new PlaceBidCommand(id, request.BidderId, request.Amount), ct));
 }

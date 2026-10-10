@@ -34,6 +34,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 Title = "Business rule violated",
                 Detail = ex.Message
             },
+            ConcurrencyConflictException ex => new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Concurrency conflict",
+                Detail = ex.Message
+            },
             _ => new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,

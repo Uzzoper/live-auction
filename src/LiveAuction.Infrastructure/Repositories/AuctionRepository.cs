@@ -1,4 +1,5 @@
 using LiveAuction.Domain.Entities;
+using LiveAuction.Domain.Exceptions;
 using LiveAuction.Domain.Repositories;
 using LiveAuction.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,15 @@ public class AuctionRepository(AppDbContext context) : IAuctionRepository
     public async Task AddAsync(Auction auction, CancellationToken ct = default)
         => await context.Auctions.AddAsync(auction, ct);
 
-    public Task SaveChangesAsync(CancellationToken ct = default)
-        => context.SaveChangesAsync(ct);
+    public async Task SaveChangesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            await context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyConflictException();
+        }
+    }
 }
