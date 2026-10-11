@@ -28,6 +28,18 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 Title = "Auction not found",
                 Detail = ex.Message
             },
+            EmailAlreadyInUseException ex => new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Email already registered",
+                Detail = ex.Message
+            },
+            InvalidCredentialsException ex => new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Authentication failed",
+                Detail = ex.Message
+            },
             DomainException ex => new ProblemDetails
             {
                 Status = StatusCodes.Status422UnprocessableEntity,

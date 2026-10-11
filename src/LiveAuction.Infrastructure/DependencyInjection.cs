@@ -1,8 +1,10 @@
+using LiveAuction.Application.Abstractions;
 using LiveAuction.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using LiveAuction.Domain.Repositories;
+using LiveAuction.Infrastructure.Auth;
 using LiveAuction.Infrastructure.Repositories;
 
 namespace LiveAuction.Infrastructure;
@@ -17,6 +19,9 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IAuctionRepository, AuctionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         return services;
     }
 }
