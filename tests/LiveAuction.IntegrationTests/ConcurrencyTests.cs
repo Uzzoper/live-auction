@@ -7,8 +7,8 @@ using Xunit.Abstractions;
 
 namespace LiveAuction.IntegrationTests;
 
+[Collection(IntegrationCollection.Name)]
 public class ConcurrencyTests(CustomWebApplicationFactory factory, ITestOutputHelper output)
-    : IClassFixture<CustomWebApplicationFactory>
 {
     private record IdResponse(Guid Id);
     private record AuctionResponse(decimal CurrentPrice, int BidCount);
@@ -16,11 +16,10 @@ public class ConcurrencyTests(CustomWebApplicationFactory factory, ITestOutputHe
     [Fact]
     public async Task ConcurrentBids_WithSameAmount_ProduceExactlyOneWinner()
     {
-        var client = factory.CreateClient();
+        var (seller, _) = await AuthHelper.CreateAuthenticatedClientAsync(factory);
 
-        var created = await client.PostAsJsonAsync("/auctions", new
+        var created = await seller.PostAsJsonAsync("/auctions", new
         {
-            sellerId = Guid.NewGuid(),
             title = "Concurrency test",
             startingPrice = 100,
             minIncrement = 10,
@@ -29,23 +28,23 @@ public class ConcurrencyTests(CustomWebApplicationFactory factory, ITestOutputHe
         created.EnsureSuccessStatusCode();
         var auctionId = (await created.Content.ReadFromJsonAsync<IdResponse>())!.Id;
 
-        const int bidders = 20;
+        const int bidderCount = 20;
+        var bidders = new List<HttpClient>();
+        for (var i = 0; i < bidderCount; i++)
+            bidders.Add((await AuthHelper.CreateAuthenticatedClientAsync(factory)).Client);
+
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var tasks = Enumerable.Range(0, bidders).Select(async _ =>
+        var tasks = bidders.Select(async bidder =>
         {
             await gate.Task;
-            return await client.PostAsJsonAsync($"/auctions/{auctionId}/bids", new
-            {
-                bidderId = Guid.NewGuid(),
-                amount = 200
-            });
+            return await bidder.PostAsJsonAsync($"/auctions/{auctionId}/bids", new { amount = 200 });
         }).ToList();
 
         gate.SetResult();
         var responses = await Task.WhenAll(tasks);
         var statuses = responses.Select(r => r.StatusCode).ToList();
-        
+
         foreach (var group in statuses.GroupBy(s => s))
             output.WriteLine($"{(int)group.Key} {group.Key}: {group.Count()}");
 
@@ -54,7 +53,7 @@ public class ConcurrencyTests(CustomWebApplicationFactory factory, ITestOutputHe
             statuses.Where(s => s != HttpStatusCode.OK),
             s => Assert.True(s is HttpStatusCode.Conflict or HttpStatusCode.UnprocessableEntity));
 
-        var auction = await client.GetFromJsonAsync<AuctionResponse>($"/auctions/{auctionId}");
+        var auction = await seller.GetFromJsonAsync<AuctionResponse>($"/auctions/{auctionId}");
         Assert.Equal(200m, auction!.CurrentPrice);
         Assert.Equal(1, auction.BidCount);
 
