@@ -1,4 +1,4 @@
-# Live Auction
+~~# Live Auction
 
 Real-time auction API built with ASP.NET Core 10, Clean Architecture and CQRS.
 The core problem it solves: many bidders placing bids on the same auction at the same time, without ever accepting two winners.
@@ -16,6 +16,7 @@ The core problem it solves: many bidders placing bids on the same auction at the
 - MediatR (CQRS) and FluentValidation
 - Entity Framework Core with SQL Server
 - OpenAPI with Scalar
+- JWT authentication stored in an HTTP-only cookie
 - xUnit and `WebApplicationFactory`
 - Docker Compose for the local database
 
@@ -61,17 +62,22 @@ The connection string and SA password in `appsettings.Development.json` and `doc
 
 ## API
 
-| Method | Route | Description | Responses |
-|---|---|---|---|
-| POST | `/auctions` | Create an auction | 201, 400 |
-| GET | `/auctions/{id}` | Get an auction | 200, 404 |
-| POST | `/auctions/{id}/bids` | Place a bid | 200, 400, 404, 409, 422 |
+| Method | Route | Auth | Description | Responses |
+|---|---|---|---|---|
+| POST | `/auth/register` | No | Create an account | 201, 400, 409 |
+| POST | `/auth/login` | No | Log in, sets an HTTP-only cookie | 200, 400, 401 |
+| POST | `/auth/logout` | No | Clear the cookie | 204 |
+| GET | `/auth/me` | Yes | Current user | 200, 401 |
+| POST | `/auctions` | Yes | Create an auction (seller is the logged user) | 201, 400, 401 |
+| GET | `/auctions/{id}` | No | Get an auction | 200, 404 |
+| POST | `/auctions/{id}/bids` | Yes | Place a bid (bidder is the logged user) | 200, 400, 401, 404, 409, 422 |
 
 Status codes:
 
 - `400` invalid input (validation)
+- `401` not authenticated, or invalid credentials on login
 - `404` auction not found
-- `409` concurrency conflict, the auction changed while the bid was being processed
+- `409` concurrency conflict, the auction changed while the bid was being processed (or email already registered)
 - `422` business rule violated (bid too low, auction closed, seller bidding)
 
 ## Concurrency
@@ -105,7 +111,7 @@ dotnet test tests/LiveAuction.IntegrationTests
 
 ## Roadmap
 
-- [ ] JWT authentication with an HTTP-only cookie (bidder and seller taken from the token)
+- [x] JWT authentication with an HTTP-only cookie (bidder and seller taken from the token)
 - [ ] Live bid updates with SignalR
 - [ ] Angular client
 - [ ] Load test with results
@@ -113,4 +119,4 @@ dotnet test tests/LiveAuction.IntegrationTests
 
 ## Notes
 
-MediatR is distributed under a commercial license model in recent versions. It runs without a key for development and testing, and the API logs a warning at startup.
+MediatR is distributed under a commercial license model in recent versions. It runs without a key for development and testing, and the API logs a warning at startup.~~
